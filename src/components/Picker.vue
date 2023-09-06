@@ -1,8 +1,8 @@
 <script setup lang="ts">
 import { computed } from "vue";
 import usePicker from "@/hooks/usePicker";
-import type { PickerOptions, PickData } from '@/types';
-import { isObject, isArray } from '@/utils/checkType';
+import type { PickerOptions, PickData } from "@/types";
+import { isObject, isArray } from "@/utils/checkType";
 
 interface Props {
   data?: PickData;
@@ -22,29 +22,33 @@ const props = withDefaults(defineProps<Props>(), {
   type: "",
 });
 
-const emit = defineEmits([
-  'update:isShowPicker',
-  'update:anchor',
-  'cancel',
-  'confirm'
-]);
+const emit = defineEmits(["update:isShowPicker", "update:anchor", "cancel", "confirm"]);
 
 const options = computed(() => ({
-  cancelClass: '',
-  confirmClass: '',
-  titleClass: '',
-  cancelColor: '#999',
-  confirmColor: '#42b983',
-  titleColor: '',
-  cancelText: 'Cancel',
-  confirmText: 'Confirm',
-  titleText: '',
+  cancelClass: "",
+  confirmClass: "",
+  titleClass: "",
+  cancelColor: "#999",
+  confirmColor: "#42b983",
+  titleColor: "",
+  cancelText: "Cancel",
+  confirmText: "Confirm",
+  titleText: "",
   ...props.options,
 }));
 const cancelColor = computed(() => options.value.cancelColor);
 const confirmColor = computed(() => options.value.confirmColor);
 const titleColor = computed(() => options.value.titleColor);
-const showKeys = computed(() => isArray(props.showKey) ? props.showKey : [props.showKey]);
+const showKeys = computed(() =>
+  isArray(props.showKey) ? props.showKey : [props.showKey]
+);
+
+function confirmItem(index2: any) {
+  const { anchor } = getSelectedItem();
+  if (index2 === anchor && allowedClick()) {
+    confirm();
+  }
+}
 
 const {
   pickerData,
@@ -52,6 +56,8 @@ const {
   cancel,
   confirm,
   closePicker,
+  allowedClick,
+  getSelectedItem,
 } = usePicker(props, emit);
 </script>
 
@@ -63,21 +69,40 @@ const {
   <transition name="slide">
     <div class="picker" v-show="isShowPicker">
       <div class="picker_title">
-        <button :class="['picker_cancel', options.cancelClass]" :style="{ color: cancelColor }" @click="cancel">
+        <button
+          :class="['picker_cancel', options.cancelClass]"
+          :style="{ color: cancelColor }"
+          @click="cancel"
+        >
           {{ options.cancelText }}
         </button>
-        <button :class="['picker_confirm', options.confirmClass]" :style="{ color: confirmColor }" @click="confirm">
+        <button
+          :class="['picker_confirm', options.confirmClass]"
+          :style="{ color: confirmColor }"
+          @click="confirm"
+        >
           {{ options.confirmText }}
         </button>
-        <h4 :class="[options.titleClass]" :style="{ color: titleColor }">{{ options.titleText }}</h4>
+        <h4 :class="[options.titleClass]" :style="{ color: titleColor }">
+          {{ options.titleText }}
+        </h4>
       </div>
       <div class="picker_panel">
         <div class="picker_mask_top"></div>
         <div class="picker_mask_bottom"></div>
         <div class="picker_wheel_wrapper" ref="wheelWrapper">
-          <div class="picker_wheel" v-for="(wheel, wheelIndex) in pickerData" :key="wheelIndex">
+          <div
+            class="picker_wheel"
+            v-for="(wheel, wheelIndex) in pickerData"
+            :key="wheelIndex"
+          >
             <ul class="picker_wheel_scroll">
-              <li class="picker_wheel_item" v-for="(item, index) in wheel" :key="index">
+              <li
+                class="picker_wheel_item"
+                v-for="(item, index) in wheel"
+                :key="index"
+                @touchend="confirmItem(index)"
+              >
                 {{ showKeys?.[wheelIndex] && isObject(item) ? item[showKeys[wheelIndex]!] : item }}
               </li>
             </ul>
@@ -114,7 +139,7 @@ const {
   bottom: 0;
   left: 0;
   z-index: 9999;
-  background: rgba(0, 0, 0, .2);
+  background: rgba(0, 0, 0, 0.2);
 }
 
 .picker {
@@ -122,7 +147,7 @@ const {
   left: 0;
   right: 0;
   bottom: 0;
-  height: 270px;
+  height: 310px;
   z-index: 10000;
   background: #fff;
 
@@ -132,7 +157,7 @@ const {
     color: #333;
 
     &::after {
-      content: '';
+      content: "";
       display: block;
       border-bottom: 1px solid #ebebeb;
       left: 0;
@@ -170,7 +195,7 @@ const {
 
   &_panel {
     position: relative;
-    height: 226px;
+    height: 266px;
     padding: 24px 12px;
     box-sizing: border-box;
   }
@@ -180,7 +205,7 @@ const {
     position: absolute;
     left: 0;
     right: 0;
-    height: 72px;
+    height: 95px;
     background: #fff;
     transform: translateZ(0);
     z-index: 1;
@@ -188,34 +213,42 @@ const {
   }
 
   &_mask_top {
-    top: 24px;
-    background: linear-gradient(to bottom, rgba(255, 255, 255, .9), rgba(255, 255, 255, .5));
+    top: 20px;
+    background: linear-gradient(
+      to bottom,
+      rgba(255, 255, 255, 0.9),
+      rgba(255, 255, 255, 0.5)
+    );
 
     &:after {
-      content: '';
+      content: "";
       display: block;
       position: absolute;
       left: 0;
       right: 0;
       bottom: 0;
       border-bottom: 1px solid #ebebeb;
-      transform: scaleY(.5);
+      transform: scaleY(0.5);
     }
   }
 
   &_mask_bottom {
     bottom: 24px;
-    background: linear-gradient(to top, rgba(255, 255, 255, .9), rgba(255, 255, 255, .5));
+    background: linear-gradient(
+      to top,
+      rgba(255, 255, 255, 0.9),
+      rgba(255, 255, 255, 0.5)
+    );
 
     &::before {
-      content: '';
+      content: "";
       display: block;
       position: absolute;
       left: 0;
       right: 0;
       top: 0;
       border-bottom: 1px solid #ebebeb;
-      transform: scaleY(.5);
+      transform: scaleY(0.5);
     }
   }
 
@@ -230,13 +263,13 @@ const {
     }
 
     &_scroll {
-      margin-top: 72px;
+      margin-top: 92px;
       padding: 0;
     }
 
     &_item {
-      height: 34px;
-      line-height: 34px;
+      height: 30px;
+      line-height: 30px;
       font-size: 17px;
       text-align: center;
       overflow: hidden;

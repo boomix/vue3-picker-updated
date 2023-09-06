@@ -23,6 +23,7 @@ export default (props: PickerProps, emit: PickerEmit) => {
 
     return isArray(props.anchor) ? props.anchor : [props.anchor];
   });
+  const clickAllowed = ref(true);
 
   async function setPickerData(isUpdate = false) {
     isUpdate ? updatePickerData() : updateSelect();
@@ -58,16 +59,26 @@ export default (props: PickerProps, emit: PickerEmit) => {
       wheel = wheels.value[index] = new BScroll(node, {
         wheel: {
           selectedIndex: 0,
-          rotate: 25
+          rotate: 0
         },
         swipeTime: props.swipeTime,
       });
+      wheel.on('scrollStart', () => handleScroll(index));
       wheel.on('scrollEnd', () => handleScrollEnd(index));
     }
     return wheel;
   }
 
+  function handleScroll(index: number) {
+    clickAllowed.value = false;
+  }
+
   function handleScrollEnd(index: number) {
+
+    setTimeout(() => {
+      clickAllowed.value = true;
+    }, 10)
+
     if (!isDate.value || index === 2) return;
     const position = wheels.value[index].getSelectedIndex();
     const value = dateList!.value[index][position];
@@ -78,7 +89,7 @@ export default (props: PickerProps, emit: PickerEmit) => {
 
   function scrollToAnchor() {
     wheels.value.forEach((wheel, index) => {
-      const targetPos = pickerAnchors.value?.[index]; 
+      const targetPos = pickerAnchors.value?.[index];
       wheel.wheelTo(targetPos ?? 0);
     });
   }
@@ -112,6 +123,10 @@ export default (props: PickerProps, emit: PickerEmit) => {
     wheels.value.forEach(wheel => wheel.stop());
   }
 
+  function allowedClick() {
+    return clickAllowed.value;
+  }
+
   function getSelectedItem() {
     const { item, anchor } = wheels.value.reduce((result, wheel, index) => {
       const position = wheel.getSelectedIndex();
@@ -134,5 +149,7 @@ export default (props: PickerProps, emit: PickerEmit) => {
     cancel,
     confirm,
     closePicker,
+    allowedClick,
+    getSelectedItem
   }
 }
